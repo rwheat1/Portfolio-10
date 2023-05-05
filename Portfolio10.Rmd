@@ -53,11 +53,44 @@ Item_Ratings_Long1 <- Item_Ratings_Long1 %>%
 
 Item_Ratings_Long1$ggplot_name <- factor(Item_Ratings_Long1$ggplot_name, levels = c("TCS", "HH Sincerity", "HH Fairness", "HH Greed-Avoidance", "HH Modesty", "HH Overall"))
 
+ci_upper <- function(x) {
+  sd <- sd(x)
+  se <- sd / sqrt(length(x))
+  ci <- mean(x) + (1.96 * se)
+  return(ci)
+}
+
+ci_lower <- function(x) {
+  sd <- sd(x)
+  se <- sd / sqrt(length(x))
+  ci <- mean(x) - (1.96 * se)
+  return(ci)
+}
+
+TCS_upper <- ci_upper(Item_Ratings$TCS_Tru)
+TCS_lower <- ci_lower(Item_Ratings$TCS_Tru)
+
+Sin_upper <- ci_upper(Item_Ratings$Sin_Tru)
+Sin_lower <- ci_lower(Item_Ratings$Sin_Tru)
+
+Fair_upper <- ci_upper(Item_Ratings$Fair_Tru)
+Fair_lower <- ci_lower(Item_Ratings$Fair_Tru)
+
+Greed_upper <- ci_upper(Item_Ratings$Greed_Tru)
+Greed_lower <- ci_lower(Item_Ratings$Greed_Tru)
+
+Mod_upper <- ci_upper(Item_Ratings$Mod_Tru)
+Mod_lower <- ci_lower(Item_Ratings$Mod_Tru)
+
+HH_upper <- ci_upper(Item_Ratings$HH_Tru)
+HH_lower <- ci_lower(Item_Ratings$HH_Tru)
+
 #make plot
 
 ggplot(Item_Ratings_Long1, aes(x = ggplot_name, y = (Avg_Tru_Rating / 152), fill = ggplot_name)) +
   geom_col() +
   theme_bw() +
+  theme(legend.position = "none") +
   coord_cartesian(ylim = c(0, 3)) +
   scale_fill_manual(label = NULL, values = c("black", "gray80", "gray56", "gray63", "gray50", "gray75")) +
   labs(title = "Truthfulness Item Ratings",
@@ -91,16 +124,74 @@ Item_Ratings_Long2 <- Item_Ratings_Long2 %>%
 
 Item_Ratings_Long2$ggplot_name <- factor(Item_Ratings_Long2$ggplot_name, levels = c("TCS", "HH Sincerity", "HH Fairness", "HH Greed-Avoidance", "HH Modesty", "HH Overall"))
 
+
+
+TCpure_upper <- ci_upper(Item_Ratings$TCpure)
+TCpure_lower <- ci_lower(Item_Ratings$TCpure)
+Sinpure_upper <- ci_upper(Item_Ratings$Sinpure)
+Sinpure_lower <- ci_lower(Item_Ratings$Sinpure)
+Fairpure_upper <- ci_upper(Item_Ratings$Fairpure)
+Fairpure_lower <- ci_lower(Item_Ratings$Fairpure)
+Greedpure_upper <- ci_upper(Item_Ratings$Greedpure)
+Greedpure_lower <- ci_lower(Item_Ratings$Greedpure)
+Modpure_upper <- ci_upper(Item_Ratings$Modpure)
+Modpure_lower <- ci_lower(Item_Ratings$Modpure)
+HHpure_upper <- ci_upper(Item_Ratings$HHpure)
+HHpure_lower <- ci_lower(Item_Ratings$HHpure)
+
 #make plot
 
 ggplot(Item_Ratings_Long2, aes(x = ggplot_name, y = (Avg_Pure_Rating / 152), fill = ggplot_name)) +
   geom_col() +
   theme_bw() +
+  theme(legend.position = "none") +
   coord_cartesian(ylim = c(-3, 3)) +
   scale_fill_manual(label = NULL, values = c("black", "gray80", "gray56", "gray63", "gray50", "gray75")) +
-  labs(title = "Truthfulness Item Ratings",
+  labs(title = "Truthfulness Purity Item Ratings",
        x = "Scale",
        y = "Mean Informativeness About Truthfulness",
        fill = NULL)
 ```
 
+This plot reveals that, not only do people rate TCS items to reflect truthfulness more than other constructs, it is the only scale (of those included in this study) which does so!
+
+One more plot: let's look at these as violins.
+
+```{r violin-tcs}
+
+#Overall Truthfulness
+
+ggplot(Item_Ratings_Long1, aes(x = ggplot_name, y = Avg_Tru_Rating, fill = ggplot_name)) +
+  geom_violin() +
+  theme_bw() +
+  theme(legend.position = "none") +
+  coord_cartesian(ylim = c(0, 3)) +
+  stat_summary(fun = "mean",
+               geom = "crossbar",
+               na.rm = TRUE) +
+  scale_fill_manual(label = NULL, values = c("black", "gray80", "gray56", "gray63", "gray50", "gray75")) +
+  labs(title = "Truthfulness Item Ratings",
+       x = "Scale",
+       y = "Mean Informativeness About Truthfulness",
+       fill = NULL)
+
+#Pure Truthfulness
+
+ggplot(Item_Ratings_Long2, aes(x = ggplot_name, y = Avg_Pure_Rating, fill = ggplot_name)) +
+  geom_violin() +
+  theme_bw() +
+  theme(legend.position = "none") +
+  coord_cartesian(ylim = c(-3, 3)) +
+  stat_summary(fun = "mean",
+               geom = "crossbar",
+               na.rm = TRUE) +
+  scale_fill_manual(label = NULL, values = c("black", "gray80", "gray56", "gray63", "gray50", "gray75")) +
+  labs(title = "Truthfulness Purity Item Ratings",
+       x = "Scale",
+       y = "Informativeness About Truthfulness",
+       fill = NULL)
+
+```
+
+
+These make things just as clear: most people think the TCS is a better measure of truthfulness on its face than each facet of Honesty-Humility, and HH overall.
