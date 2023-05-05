@@ -1,0 +1,106 @@
+---
+title: "Portfolio 10 -- Recreating a Bar Plot"
+author: "Ryan Wheat"
+date: "05/05/2023"
+output: github_document
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load-packages, include = FALSE}
+library(tidyr)
+library(tidyverse)
+library(dplyr)
+library(haven)
+library(gt)
+```
+
+
+```{r get-data, include = FALSE}
+
+Item_Ratings <- read_sav("//10.4.6.5/psychology/labs/honestyproject/Empirical Activities/Item-ratings/Data/Item Ratings.sav")
+
+```
+
+##Background
+
+I've done some relatively lengthy portfolios recently, so today, I'm going to take it down a notch: I'm going to try to make some visuals using ggplot.
+
+First, I'm going to utilize data from my first year project for this purpose. In this study, we examined the content validity of a new honesty scale -- the Truthful Communication Scale (TCS) -- by comparing the face validity of its items against those of another "honesty" scale, Honesty-Humility (HH). 
+
+Participants were asked to rate the extent to which each item from both scales reflected (1) truthfulness, (2) manipulativeness, (3) law-breaking, (4) greed, (5) modesty. Lets plot those results.
+
+```{r overall-truthfulness}
+
+#create long dataset to compare truthfulness ratings
+
+Item_Ratings_Long1 <- Item_Ratings %>%
+  mutate(Participant = c(1:152)) %>%
+  select(206, 200:205) %>%
+  pivot_longer(!Participant, names_to = "Scale", values_to = "Avg_Tru_Rating")
+
+#make new variable with better label for plotting
+
+Item_Ratings_Long1 <- Item_Ratings_Long1 %>%
+  mutate(ggplot_name = case_when(Scale == "Sin_Tru" ~ "HH Sincerity",
+                                 Scale == "Fair_Tru" ~ "HH Fairness",
+                                 Scale == "Greed_Tru" ~ "HH Greed-Avoidance",
+                                 Scale == "Mod_Tru" ~ "HH Modesty",
+                                 Scale == "TCS_Tru" ~ "TCS",
+                                 Scale == "HH_Tru" ~ "HH Overall"))
+
+Item_Ratings_Long1$ggplot_name <- factor(Item_Ratings_Long1$ggplot_name, levels = c("TCS", "HH Sincerity", "HH Fairness", "HH Greed-Avoidance", "HH Modesty", "HH Overall"))
+
+#make plot
+
+ggplot(Item_Ratings_Long1, aes(x = ggplot_name, y = (Avg_Tru_Rating / 152), fill = ggplot_name)) +
+  geom_col() +
+  theme_bw() +
+  coord_cartesian(ylim = c(0, 3)) +
+  scale_fill_manual(label = NULL, values = c("black", "gray80", "gray56", "gray63", "gray50", "gray75")) +
+  labs(title = "Truthfulness Item Ratings",
+       x = "Scale",
+       y = "Mean Informativeness About Truthfulness",
+       fill = NULL)
+```
+
+This plot shows that TCS items are more face-valid for truthfulness than HH items are. But what about comparing the difference between the validity of items on truthfulness vs. other relevant constructs?
+
+I created a variable to reflect such a difference called "Pure Truthfulness." This is a difference score, such that ratings above zero on this variable indicate that an item reflects truthfulness MORE THAN some other construct (e.g., manipulativeness, law-breaking, greed, modesty) that may ostensibly be related to these items.
+
+```{r pure-truthfulness}
+
+#create long dataset to compare pure truthfulness ratings
+
+Item_Ratings_Long2 <- Item_Ratings %>%
+  mutate(Participant = c(1:152)) %>%
+  select(206, 194:199) %>%
+  pivot_longer(!Participant, names_to = "Scale", values_to = "Avg_Pure_Rating")
+
+#make new variable with better label for plotting
+
+Item_Ratings_Long2 <- Item_Ratings_Long2 %>%
+  mutate(ggplot_name = case_when(Scale == "Sinpure" ~ "HH Sincerity",
+                                 Scale == "Fairpure" ~ "HH Fairness",
+                                 Scale == "Greedpure" ~ "HH Greed-Avoidance",
+                                 Scale == "Modpure" ~ "HH Modesty",
+                                 Scale == "TCpure" ~ "TCS",
+                                 Scale == "HHpure" ~ "HH Overall"))
+
+Item_Ratings_Long2$ggplot_name <- factor(Item_Ratings_Long2$ggplot_name, levels = c("TCS", "HH Sincerity", "HH Fairness", "HH Greed-Avoidance", "HH Modesty", "HH Overall"))
+
+#make plot
+
+ggplot(Item_Ratings_Long2, aes(x = ggplot_name, y = (Avg_Pure_Rating / 152), fill = ggplot_name)) +
+  geom_col() +
+  theme_bw() +
+  coord_cartesian(ylim = c(-3, 3)) +
+  scale_fill_manual(label = NULL, values = c("black", "gray80", "gray56", "gray63", "gray50", "gray75")) +
+  labs(title = "Truthfulness Item Ratings",
+       x = "Scale",
+       y = "Mean Informativeness About Truthfulness",
+       fill = NULL)
+```
+
